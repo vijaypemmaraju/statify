@@ -43,8 +43,8 @@ const statify = function (component, getState, updaters) {
           Statify.stateTree = stateTree;
           notifyAll();
         })
-      }.bind(this)
-    }.bind(this));
+      }
+    })
 
     component.prototype.updaters = appliedUpdaters
   }
@@ -64,7 +64,6 @@ const statify = function (component, getState, updaters) {
     }
 
     let tree = Statify.stateTree
-    let parent, childName;
 
     this.ownerStack = ownerStack;
 
@@ -95,10 +94,6 @@ function notifyAll() {
 const curriedStatify = (getState, updaters) => component => statify(component, getState, updaters)
 
 class StatifyProvider extends Component {
-  constructor(props) {
-    super(props)
-  }
-
   componentDidMount() {
     registerListener(this);
   }

@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import './App.scss';
 import Child from './Child'
 import {statify} from './statify'
-import PropTypes from 'prop-types'
-import { fromJS } from 'immutable'
 
 @statify((stateTree) => {
   return {
@@ -15,10 +13,6 @@ import { fromJS } from 'immutable'
   }
 })
 class App extends Component {
-  constructor(props) {
-    super(props)
-  }
-
   render() {
     return (
       <div>

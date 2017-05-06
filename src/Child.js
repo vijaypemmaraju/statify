@@ -1,7 +1,5 @@
 import React, {Component} from 'react';
-import logo from './logo.svg';
 import {statify} from './statify'
-import PropTypes from 'prop-types'
 
 @statify(
   (stateTree, props) => {
