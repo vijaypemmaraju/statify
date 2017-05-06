@@ -20,9 +20,7 @@ ReactDOM.render(
 ### Usage
 ```javascript
 import React, {Component} from 'react';
-import logo from './logo.svg';
 import {statify} from './statify'
-import PropTypes from 'prop-types'
 
 @statify(
   (stateTree, props) => {
@@ -58,7 +56,8 @@ class Child extends Component {
   render() {
     return (
       <div className="App">
-        {this.props.index}<input type="checkbox" checked={this.props.checked} onChange={this.updaters.handleCheckedChange.bind(this, this.props.index)} />
+        {this.props.index}
+        <input type="checkbox" checked={this.props.checked} onChange={this.updaters.handleCheckedChange.bind(this, this.props.index)} />
         {this.props.text}
       </div>
     )
