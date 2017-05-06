@@ -99,6 +99,7 @@ class StatifyProvider extends Component {
   }
 
   onUpdate() {
+    // TODO: figure out how to do updates without forcing
     this.forceUpdate();
   }
 

@@ -1,8 +1,23 @@
 ### Intro
 Statify is a state management framework that uses the existing component structure as its state shape.
 
-### Usage
+### Initialization
+```javascript
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
+import './index.css';
+import {StatifyProvider, stateTree} from './statify'
 
+ReactDOM.render(
+  <StatifyProvider stateTree={stateTree}>
+    <App />
+  </StatifyProvider>,
+  document.getElementById('root')
+);
+```
+
+### Usage
 ```javascript
 import React, {Component} from 'react';
 import logo from './logo.svg';
