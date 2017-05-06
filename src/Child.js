@@ -31,7 +31,6 @@ import {statify} from './statify'
   }
 )
 class Child extends Component {
-
   render() {
     return (
       <div className="App">
