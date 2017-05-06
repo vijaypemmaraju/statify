@@ -14,7 +14,7 @@ const StatifiedComposer = (StatifiedComponent, getState) => class StatifiedCompo
     this.setState({ ready: true });
   }
   render() {
-    return this.state.ready && <StatifiedComponent {...getState.call(this, window.stateTree)} />
+    return this.state.ready && <StatifiedComponent {...Object.assign(getState.call(this, window.stateTree, this.props), this.props)} />
   }
 };
 
@@ -36,7 +36,7 @@ const statify = function (component, getState, updaters) {
   component.prototype.getStatifyProps = getState
 
   if (updaters) {
-    let appliedUpdaters = updaters(stateTree)
+    let appliedUpdaters = updaters(() => window.stateTree)
     Object.entries(appliedUpdaters).forEach(function([key, value]) {
       appliedUpdaters[key] = function(...args) {
         window.stateTree = value.apply(this, args);
@@ -49,7 +49,12 @@ const statify = function (component, getState, updaters) {
 
   component.prototype.componentWillMount = function() {
     let currentOwner = this
-    let ownerStack = [currentOwner.name]
+    let postfix = ''
+    let key = this._reactInternalInstance._currentElement._owner._currentElement.key
+    if (key) {
+      postfix = `-${key}`
+    }
+    let ownerStack = [currentOwner.name+postfix]
 
     while (currentOwner.context.owner) {
       ownerStack.unshift(currentOwner.context.owner.name)
@@ -62,7 +67,7 @@ const statify = function (component, getState, updaters) {
     this.ownerStack = ownerStack;
 
     tree = tree.withMutations((tree) => {
-      tree.mergeIn(ownerStack, this.getStatifyProps(this.__getStateTree()))
+      tree.mergeIn(ownerStack, this.getStatifyProps(this.__getStateTree(), this.props))
     })
 
     window.stateTree = tree

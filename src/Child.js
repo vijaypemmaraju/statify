@@ -1,23 +1,21 @@
 import React, {Component} from 'react';
 import logo from './logo.svg';
-import {StateTree, stateTree, statify} from './statify'
+import {statify} from './statify'
 import PropTypes from 'prop-types'
 
 @statify(
-  (stateTree) => {
+  (stateTree, props) => {
     return {
       item: stateTree.getIn(['App', 'Child', 'item'], "HI"),
-      checked:  stateTree.getIn(['App', 'checked'], false)
+      checked:  stateTree.getIn(['App', `checked${props.index}`], true)
     }
   },
-  (stateTree) => ({
-    handleCheckedChange: (e) => {
-      return stateTree.withMutations((stateTree) => {
-        stateTree.mergeIn(['App'], {
-          checked: e.target.checked
-        }).mergeIn(['App', 'Child'], {
-          item: "BYE"
-        })
+  (getStateTree) => ({
+    handleCheckedChange: (index, e) => {
+      return getStateTree().withMutations((stateTree) => {
+        let updates = {}
+        updates[`checked${index}`] = e.target.checked
+        stateTree.mergeIn(['App'], updates)
       })
     }
   })
@@ -33,7 +31,7 @@ class Child extends Component {
           <p className="App-intro">
             To get started, edit <code>src/App.js</code> and save to reload.
           </p>
-          <input type="checkbox" checked={this.props.checked} onChange={this.updaters.handleCheckedChange} />
+          <input type="checkbox" checked={this.props.checked} onChange={this.updaters.handleCheckedChange.bind(this, this.props.index)} />
         </div>
     )
   }
