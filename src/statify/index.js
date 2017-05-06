@@ -39,10 +39,17 @@ const statify = function (component, getState, updaters) {
     let appliedUpdaters = updaters(() => Statify.stateTree)
     Object.entries(appliedUpdaters).forEach(function([key, value]) {
       appliedUpdaters[key] = function(...args) {
-        value.apply(appliedUpdaters, args).then((stateTree) => {
-          Statify.stateTree = stateTree;
+        result = value.apply(appliedUpdaters, args)
+        if (result.then) {
+          result.then((stateTree) => {
+            Statify.stateTree = stateTree;
+            notifyAll();
+          })
+        } else {
+          Statify.stateTree = result;
           notifyAll();
-        })
+        }
+
       }
     })
 
