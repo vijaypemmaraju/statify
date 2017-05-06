@@ -3,12 +3,15 @@ import './App.scss';
 import Child from './Child'
 import {statify} from './statify'
 import PropTypes from 'prop-types'
+import { fromJS } from 'immutable'
 
 @statify((stateTree) => {
   return {
-    checked1: stateTree.getIn(['App', 'checked1'], true),
-    checked2: stateTree.getIn(['App', 'checked2'], true),
-    checked3: stateTree.getIn(['App', 'checked3'], true)
+    checked: {
+      1: stateTree.getIn(['App', 'checked', '1'], true),
+      2: stateTree.getIn(['App', 'checked', '2'], true),
+      3: stateTree.getIn(['App', 'checked', '3'], true),
+    }
   }
 })
 class App extends Component {

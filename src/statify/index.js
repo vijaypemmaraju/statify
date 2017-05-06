@@ -2,8 +2,8 @@ import PropTypes from 'prop-types'
 import React, { Component, Children } from 'react';
 import { Map } from 'immutable'
 
-const stateTree = new Map();
-window.stateTree = stateTree
+const Statify = {stateTree: new Map()}
+window.Statify = Statify
 
 const StatifiedComposer = (StatifiedComponent, getState) => class StatifiedComponentWrapper extends Component {
   constructor(props) {
@@ -14,7 +14,7 @@ const StatifiedComposer = (StatifiedComponent, getState) => class StatifiedCompo
     this.setState({ ready: true });
   }
   render() {
-    return this.state.ready && <StatifiedComponent {...Object.assign(getState.call(this, window.stateTree, this.props), this.props)} />
+    return this.state.ready && <StatifiedComponent {...Object.assign(getState.call(this, Statify.stateTree, this.props), this.props)} />
   }
 };
 
@@ -22,7 +22,7 @@ const StatifiedComposer = (StatifiedComponent, getState) => class StatifiedCompo
 const statify = function (component, getState, updaters) {
   component.contextTypes = {owner: PropTypes.any}
   component.childContextTypes = {owner: PropTypes.any}
-  component.prototype.__getStateTree = () => stateTree
+  component.prototype.__getStateTree = () => Statify.stateTree
 
 
   component.prototype.getChildContext = function () {
@@ -36,11 +36,13 @@ const statify = function (component, getState, updaters) {
   component.prototype.getStatifyProps = getState
 
   if (updaters) {
-    let appliedUpdaters = updaters(() => window.stateTree)
+    let appliedUpdaters = updaters(() => Statify.stateTree)
     Object.entries(appliedUpdaters).forEach(function([key, value]) {
       appliedUpdaters[key] = function(...args) {
-        window.stateTree = value.apply(this, args);
-        notifyAll();
+        value.apply(appliedUpdaters, args).then((stateTree) => {
+          Statify.stateTree = stateTree;
+          notifyAll();
+        })
       }.bind(this)
     }.bind(this));
 
@@ -51,17 +53,17 @@ const statify = function (component, getState, updaters) {
     let currentOwner = this
     let postfix = ''
     let key = this._reactInternalInstance._currentElement._owner._currentElement.key
-    if (key) {
-      postfix = `-${key}`
-    }
     let ownerStack = [currentOwner.name+postfix]
+    if (key) {
+      ownerStack.push(key);
+    }
 
     while (currentOwner.context.owner) {
       ownerStack.unshift(currentOwner.context.owner.name)
       currentOwner = currentOwner.context.owner
     }
 
-    let tree = window.stateTree
+    let tree = Statify.stateTree
     let parent, childName;
 
     this.ownerStack = ownerStack;
@@ -70,7 +72,7 @@ const statify = function (component, getState, updaters) {
       tree.mergeIn(ownerStack, this.getStatifyProps(this.__getStateTree(), this.props))
     })
 
-    window.stateTree = tree
+    Statify.stateTree = tree
 
     if (this.__componentDidMount) {
       this.__componentDidMount();
@@ -108,9 +110,9 @@ class StatifyProvider extends Component {
   render() {
     window.provider = this;
     let child = Children.only(this.props.children)
-    return React.cloneElement(child, {stateTree: window.stateTree})
+    return React.cloneElement(child, {stateTree: Statify.stateTree})
   }
 }
 
-
+let stateTree = Statify.stateTree
 export {StatifyProvider, stateTree, curriedStatify as statify}
