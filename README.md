@@ -1,5 +1,5 @@
 ### Intro
-Statify is a state management framework that uses the existing component structure as its state shape.
+Statify is a state management framework that keeps all state inside a single tree/store, but with as little boilerplace as possible.
 
 ### Initialization
 ```javascript
