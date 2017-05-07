@@ -18,7 +18,8 @@ import TodoItemRecord from './models/TodoItemRecord'
     return {
       handleTodoInputChange: (e) => getStateTree().mergeIn(['Todo'], {currentTextboxValue: e.target.value}),
       addTodoItem: () => {
-        let currentTextboxValue = getStateTree().getIn(['Todo', 'currentTextboxValue'])
+        let currentTextboxValue = getStateTree().getIn(['Todo', 'currentTextboxValue'], '')
+        if (currentTextboxValue.length == 0) return getStateTree()
         return getStateTree().withMutations(stateTree => {
           stateTree
             .updateIn(['Todo', 'items'], items => (items || new List()).push(new TodoItemRecord({text: currentTextboxValue})))
