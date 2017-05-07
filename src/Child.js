@@ -5,7 +5,8 @@ import {statify} from './statify'
   (stateTree, props) => {
     return {
       text: stateTree.getIn(['App', 'Child', props.index, 'text'], ''),
-      checked:  stateTree.getIn(['App', 'checked', props.index.toString()], true)
+      waiting: stateTree.getIn(['App', 'Child', props.index, 'waiting'], false),
+      checked:  stateTree.getIn(['App', 'checked', props.index.toString()], true),
     }
   },
   (getStateTree) => {
@@ -18,12 +19,13 @@ import {statify} from './statify'
         return getStateTree().withMutations((stateTree) => {
           let updates = {}
           updates[index.toString()] = checked
+          updates.waiting = false;
           stateTree.mergeIn(['App', 'checked'], updates)
         })
       },
       setText: async (index, text) => {
         return getStateTree().withMutations((stateTree) => {
-          stateTree.mergeIn(['App', 'Child', index], {text: text})
+          stateTree.mergeIn(['App', 'Child', index], {text: text, waiting: true})
         })
       }
     }
@@ -35,7 +37,7 @@ class Child extends Component {
     return (
       <div className="App">
         {this.props.index}
-        <input type="checkbox" checked={this.props.checked} onChange={this.updaters.handleCheckedChange.bind(this, this.props.index)} />
+        <input type="checkbox" checked={this.props.checked} disabled={this.props.waiting ? "disabled" : false} onChange={this.updaters.handleCheckedChange.bind(this, this.props.index)} />
         {this.props.text}
       </div>
     )
