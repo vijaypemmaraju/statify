@@ -16,9 +16,7 @@ import TodoItemRecord from './models/TodoItemRecord'
   // Updater methods. These return a new state tree and get hoisted to the component (this.updaters)
   (getStateTree) => {
     return {
-      handleTextboxChange: (e) => {
-        return getStateTree().mergeIn(['Todo'], {currentTextboxValue: e.target.value})
-      },
+      handleTodoInputChange: (e) => getStateTree().mergeIn(['Todo'], {currentTextboxValue: e.target.value}),
       addTodoItem: () => {
         let currentTextboxValue = getStateTree().getIn(['Todo', 'currentTextboxValue'])
         return getStateTree().withMutations(stateTree => {
@@ -27,15 +25,8 @@ import TodoItemRecord from './models/TodoItemRecord'
             .mergeIn(['Todo'], {currentTextboxValue: ''})
         })
       },
-      handleToggleCompleted: (index, e) => {
-        let checked = e.target.checked
-        return getStateTree().withMutations((stateTree) => {
-          stateTree.mergeIn(['Todo', 'items', index], {completed: checked})
-        })
-      },
-      removeTodoItem: (index) => {
-        return getStateTree().updateIn(['Todo', 'items'], items => items.remove(index))
-      }
+      handleToggleCompleted: (index, e) => getStateTree().mergeIn(['Todo', 'items', index], {completed: e.target.checked}),
+      removeTodoItem: (index) => getStateTree().updateIn(['Todo', 'items'], items => items.remove(index))
     }
   }
 )
@@ -57,7 +48,7 @@ class Todo extends Component {
         <input
           type='textbox'
           value={this.props.currentTextboxValue}
-          onChange={this.updaters.handleTextboxChange}
+          onChange={this.updaters.handleTodoInputChange}
           onKeyPress={(e) => {if (e.key === 'Enter') {this.updaters.addTodoItem()}}}
         />
         <button onClick={this.updaters.addTodoItem}>Add</button>
