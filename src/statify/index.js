@@ -14,25 +14,24 @@ const StatifiedComposer = (StatifiedComponent, getState, namespace) => class Sta
     this.setState({ ready: true });
   }
   render() {
-    return this.state.ready && <StatifiedComponent {...Object.assign(getState.call(this, Statify.stateTree.getIn(namespace), this.props), this.props)} />
+    return this.state.ready && <StatifiedComponent {...Object.assign(getState.call(this, Statify.stateTree.getIn(namespace, new Map()), this.props), this.props)} />
   }
 };
 
 // Class Decorator
 const statify = function (component, getState, updaters, namespace = []) {
-
   if (updaters) {
-    let appliedUpdaters = updaters(() => Statify.stateTree)
+    let appliedUpdaters = updaters(() => Statify.stateTree.getIn(namespace, new Map()))
     Object.entries(appliedUpdaters).forEach(function([key, value]) {
       appliedUpdaters[key] = function(...args) {
         let result = value.apply(appliedUpdaters, args)
         if (result.then) {
           result.then((stateTree) => {
-            Statify.stateTree = stateTree;
+            Statify.stateTree = Statify.stateTree.mergeIn(namespace, stateTree);
             notifyAll();
           })
         } else {
-          Statify.stateTree = result;
+          Statify.stateTree = Statify.stateTree.mergeIn(namespace, result);
           notifyAll();
         }
 
@@ -55,7 +54,7 @@ function notifyAll() {
   listeners.forEach((listener) => listener.onUpdate())
 }
 
-const curriedStatify = (getState, updaters) => component => statify(component, getState, updaters)
+const curriedStatify = (getState, updaters, namespace) => component => statify(component, getState, updaters, namespace)
 
 class StatifyProvider extends Component {
   componentDidMount() {

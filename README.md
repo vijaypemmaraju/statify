@@ -31,27 +31,29 @@ import TodoItemRecord from './models/TodoItemRecord'
   // State definition (i.e. what will show up in this.props)
   (stateTree) => {
     return {
-      items: stateTree.getIn(['Todo', 'items'], new List()),
-      currentTextboxValue:  stateTree.getIn(['Todo', 'currentTextboxValue'], '')
+      items: stateTree.getIn(['items'], new List()),
+      currentTextboxValue:  stateTree.getIn(['currentTextboxValue'], '')
     }
   },
   // Updater methods. These return a new state tree and get hoisted to the component (this.updaters)
   (getStateTree) => {
     return {
-      handleTodoInputChange: (e) => getStateTree().mergeIn(['Todo'], {currentTextboxValue: e.target.value}),
+      handleTodoInputChange: (e) => getStateTree().set('currentTextboxValue', e.target.value),
       addTodoItem: () => {
-        let currentTextboxValue = getStateTree().getIn(['Todo', 'currentTextboxValue'], '')
-        if (currentTextboxValue.length == 0) return getStateTree()
+        let currentTextboxValue = getStateTree().getIn(['currentTextboxValue'], '')
+        if (currentTextboxValue.length === 0) return getStateTree()
         return getStateTree().withMutations(stateTree => {
           stateTree
-            .updateIn(['Todo', 'items'], items => (items || new List()).push(new TodoItemRecord({text: currentTextboxValue})))
-            .mergeIn(['Todo'], {currentTextboxValue: ''})
+            .updateIn(['items'], items => (items || new List()).push(new TodoItemRecord({text: currentTextboxValue})))
+            .set('currentTextboxValue', '')
         })
       },
-      handleToggleCompleted: (index, e) => getStateTree().mergeIn(['Todo', 'items', index], {completed: e.target.checked}),
-      removeTodoItem: (index) => getStateTree().updateIn(['Todo', 'items'], items => items.remove(index))
+      handleToggleCompleted: (index, e) => getStateTree().mergeIn(['items', index], {completed: e.target.checked}),
+      removeTodoItem: (index) => getStateTree().updateIn(['items'], items => items.remove(index))
     }
-  }
+  },
+  // Namespace of the subtree that this component will use (i.e stateTree will be Root->Todo)
+  ['Todo']
 )
 class Todo extends Component {
   render() {
