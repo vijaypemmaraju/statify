@@ -1,5 +1,5 @@
 ### Intro
-Statify is a state management framework that keeps all state inside a single tree/store, but with as little boilerplace as possible.
+Statify is a state management framework that keeps all state inside a single tree/store, but with as little boilerplate as possible.
 
 ### Initialization
 ```javascript
