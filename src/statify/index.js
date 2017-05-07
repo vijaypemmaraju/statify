@@ -5,7 +5,7 @@ import { Map } from 'immutable'
 const Statify = {stateTree: new Map()}
 window.Statify = Statify
 
-const StatifiedComposer = (StatifiedComponent, getState) => class StatifiedComponentWrapper extends Component {
+const StatifiedComposer = (StatifiedComponent, getState, namespace) => class StatifiedComponentWrapper extends Component {
   constructor(props) {
     super(props)
     this.state = {ready: false};
@@ -14,26 +14,12 @@ const StatifiedComposer = (StatifiedComponent, getState) => class StatifiedCompo
     this.setState({ ready: true });
   }
   render() {
-    return this.state.ready && <StatifiedComponent {...Object.assign(getState.call(this, Statify.stateTree, this.props), this.props)} />
+    return this.state.ready && <StatifiedComponent {...Object.assign(getState.call(this, Statify.stateTree.getIn(namespace), this.props), this.props)} />
   }
 };
 
 // Class Decorator
-const statify = function (component, getState, updaters) {
-  component.contextTypes = {owner: PropTypes.any}
-  component.childContextTypes = {owner: PropTypes.any}
-  component.prototype.__getStateTree = () => Statify.stateTree
-
-
-  component.prototype.getChildContext = function () {
-    return {owner: this}
-  }
-
-  component.prototype.name = component.name
-
-  component.prototype.__componentWillMount = component.prototype.componentWillMount
-
-  component.prototype.getStatifyProps = getState
+const statify = function (component, getState, updaters, namespace = []) {
 
   if (updaters) {
     let appliedUpdaters = updaters(() => Statify.stateTree)
@@ -56,36 +42,7 @@ const statify = function (component, getState, updaters) {
     component.prototype.updaters = appliedUpdaters
   }
 
-  component.prototype.componentWillMount = function() {
-    let currentOwner = this
-    let postfix = ''
-    let key = this._reactInternalInstance._currentElement._owner._currentElement.key
-    let ownerStack = [currentOwner.name+postfix]
-    if (key) {
-      ownerStack.push(key);
-    }
-
-    while (currentOwner.context.owner) {
-      ownerStack.unshift(currentOwner.context.owner.name)
-      currentOwner = currentOwner.context.owner
-    }
-
-    let tree = Statify.stateTree
-
-    this.ownerStack = ownerStack;
-
-    tree = tree.withMutations((tree) => {
-      tree.mergeIn(ownerStack, this.getStatifyProps(this.__getStateTree(), this.props))
-    })
-
-    Statify.stateTree = tree
-
-    if (this.__componentDidMount) {
-      this.__componentDidMount();
-    }
-  }
-
-  return StatifiedComposer(component, getState)
+  return StatifiedComposer(component, getState, namespace)
 }
 
 let listeners = []
@@ -106,14 +63,12 @@ class StatifyProvider extends Component {
   }
 
   onUpdate() {
-    // TODO: figure out how to do updates without forcing
-    this.forceUpdate();
+    this.setState({stateTree: Statify.stateTree})
   }
 
   render() {
-    window.provider = this;
     let child = Children.only(this.props.children)
-    return React.cloneElement(child, {stateTree: Statify.stateTree})
+    return React.cloneElement(child)
   }
 }
 
