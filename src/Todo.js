@@ -26,6 +26,15 @@ import TodoItemRecord from './models/TodoItemRecord'
             .updateIn(['Todo', 'items'], items => (items || new List()).push(new TodoItemRecord({text: currentTextboxValue})))
             .mergeIn(['Todo'], {currentTextboxValue: ''})
         })
+      },
+      handleToggleCompleted: (index, e) => {
+        let checked = e.target.checked
+        return getStateTree().withMutations((stateTree) => {
+          stateTree.mergeIn(['Todo', 'items', index], {completed: checked})
+        })
+      },
+      removeTodoItem: (index) => {
+        return getStateTree().updateIn(['Todo', 'items'], items => items.remove(index))
       }
     }
   }
@@ -34,8 +43,23 @@ class Todo extends Component {
   render() {
     return (
       <div className="App">
-        {this.props.items.map((item, index) => <TodoItem key={index} index={index} />)}
-        <input type='textbox' value={this.props.currentTextboxValue} onChange={this.updaters.handleTextboxChange} />
+        {this.props.items.map((item, index) => {
+          return (
+            <TodoItem
+              key={index}
+              item={item}
+              index={index}
+              handleToggleCompleted={this.updaters.handleToggleCompleted}
+              removeTodoItem={this.updaters.removeTodoItem}
+            />
+          )
+        })}
+        <input
+          type='textbox'
+          value={this.props.currentTextboxValue}
+          onChange={this.updaters.handleTextboxChange}
+          onKeyPress={(e) => {if (e.key === 'Enter') {this.updaters.addTodoItem()}}}
+        />
         <button onClick={this.updaters.addTodoItem}>Add</button>
       </div>
     );
