@@ -24,6 +24,7 @@ import {statify} from './statify'
 
 @statify(
   (stateTree, props) => {
+    // State definition (i.e. what will show up in this.props)
     return {
       text: stateTree.getIn(['App', 'Child', props.index, 'text'], ''),
       waiting: stateTree.getIn(['App', 'Child', props.index, 'waiting'], false),
@@ -31,6 +32,7 @@ import {statify} from './statify'
     }
   },
   (getStateTree) => {
+    // Updater methods. These return a new state tree and get hoisted to the component (this.updaters)
     let updates = {
       handleCheckedChange: async (index, e) => {
         let checked = e.target.checked
