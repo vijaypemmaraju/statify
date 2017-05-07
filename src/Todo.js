@@ -1,16 +1,19 @@
 import React, { Component } from 'react';
-import './App.scss';
+import './Todo.scss';
 import TodoItem from './TodoItem'
 import {statify} from './statify'
 import {List} from 'immutable'
 import TodoItemRecord from './models/TodoItemRecord'
+
 @statify(
+  // State definition (i.e. what will show up in this.props)
   (stateTree) => {
     return {
       items: stateTree.getIn(['Todo', 'items'], new List()),
       currentTextboxValue:  stateTree.getIn(['Todo', 'currentTextboxValue'], '')
     }
   },
+  // Updater methods. These return a new state tree and get hoisted to the component (this.updaters)
   (getStateTree) => {
     return {
       handleTextboxChange: (e) => {
@@ -27,7 +30,7 @@ import TodoItemRecord from './models/TodoItemRecord'
     }
   }
 )
-class App extends Component {
+class Todo extends Component {
   render() {
     return (
       <div className="App">
@@ -39,4 +42,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default Todo;
