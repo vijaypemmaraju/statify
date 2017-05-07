@@ -23,14 +23,13 @@ import React, {Component} from 'react';
 import {statify} from './statify'
 
 @statify(
-  // State definition (i.e. what will show up in this.props)
   (stateTree, props) => {
     return {
       text: stateTree.getIn(['App', 'Child', props.index, 'text'], ''),
-      checked:  stateTree.getIn(['App', 'checked', props.index.toString()], true)
+      waiting: stateTree.getIn(['App', 'Child', props.index, 'waiting'], false),
+      checked:  stateTree.getIn(['App', 'checked', props.index.toString()], true),
     }
   },
-  // Updater methods. These return a new state tree and get hoisted to the component (this.updaters)
   (getStateTree) => {
     let updates = {
       handleCheckedChange: async (index, e) => {
@@ -41,12 +40,13 @@ import {statify} from './statify'
         return getStateTree().withMutations((stateTree) => {
           let updates = {}
           updates[index.toString()] = checked
+          updates.waiting = false;
           stateTree.mergeIn(['App', 'checked'], updates)
         })
       },
       setText: async (index, text) => {
         return getStateTree().withMutations((stateTree) => {
-          stateTree.mergeIn(['App', 'Child', index], {text: text})
+          stateTree.mergeIn(['App', 'Child', index], {text: text, waiting: true})
         })
       }
     }
@@ -58,7 +58,7 @@ class Child extends Component {
     return (
       <div className="App">
         {this.props.index}
-        <input type="checkbox" checked={this.props.checked} onChange={this.updaters.handleCheckedChange.bind(this, this.props.index)} />
+        <input type="checkbox" checked={this.props.checked} disabled={this.props.waiting ? "disabled" : false} onChange={this.updaters.handleCheckedChange.bind(this, this.props.index)} />
         {this.props.text}
       </div>
     )
