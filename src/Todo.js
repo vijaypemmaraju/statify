@@ -32,6 +32,7 @@ import TodoItemRecord from './models/TodoItemRecord'
   },
   // Keypath of the subtree that this component will use (i.e stateTree will be Root->Todo)
   ['Todo'],
+  // How to navigate to the subtree given a keypath
   (stateTree, keyPath) => stateTree.getIn(keyPath, new Map())
 )
 class Todo extends Component {
