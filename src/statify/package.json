@@ -1,0 +1,29 @@
+{
+  "name": "react-statify",
+  "version": "1.0.1",
+  "description": "React state management without all the boilerplate",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vijaypemmaraju/statify.git"
+  },
+  "keywords": [
+    "react",
+    "reactjs",
+    "state-management",
+    "redux",
+    "flux"
+  ],
+  "author": "Vijay Pemmaraju",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vijaypemmaraju/statify/issues"
+  },
+  "homepage": "https://github.com/vijaypemmaraju/statify#readme",
+  "dependencies": {
+    "react": "^15.5.4"
+  }
+}
