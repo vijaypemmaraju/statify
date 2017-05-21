@@ -6,13 +6,14 @@ Statify is a state management framework that keeps all state inside a single tre
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Todo from './Todo';
+import { Map } from 'immutable'
 import './index.css';
-import {StatifyProvider, stateTree} from './statify'
+import {initializeStatify} from './statify'
+
+initializeStatify(new Map(), (stateTree, keyPath, updates) => stateTree.mergeIn(keyPath, updates))
 
 ReactDOM.render(
-  <StatifyProvider stateTree={stateTree}>
-    <Todo />
-  </StatifyProvider>,
+  <Todo />,
   document.getElementById('root')
 );
 ```
