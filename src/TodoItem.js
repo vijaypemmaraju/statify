@@ -1,6 +1,6 @@
 import React from 'react';
 
-const TodoItem = ({item, index, completed, handleToggleCompleted, removeTodoItem}) => {
+const TodoItem = ({ item, index, handleToggleCompleted, removeTodoItem }) => {
   return (
     <div>
       <input type="checkbox" checked={item.completed} onChange={handleToggleCompleted.bind(this, index)} />

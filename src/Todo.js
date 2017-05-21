@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
+import { Map, List } from 'immutable'
 import './Todo.scss';
 import TodoItem from './TodoItem'
-import {statify} from './statify'
-import {Map, List} from 'immutable'
+import { statify } from './statify'
 import TodoItemRecord from './models/TodoItemRecord'
 
 @statify(
@@ -10,24 +10,24 @@ import TodoItemRecord from './models/TodoItemRecord'
   (stateTree) => {
     return {
       items: stateTree.getIn(['items'], new List()),
-      currentTextboxValue:  stateTree.getIn(['currentTextboxValue'], '')
+      currentTextboxValue: stateTree.getIn(['currentTextboxValue'], '')
     }
   },
   // Updater methods. These return a new state tree and get hoisted to the component (this.updaters)
   (getStateTree) => {
     return {
-      handleTodoInputChange: (e) => getStateTree().set('currentTextboxValue', e.target.value),
+      handleTodoInputChange: e => getStateTree().set('currentTextboxValue', e.target.value),
       addTodoItem: () => {
-        let currentTextboxValue = getStateTree().getIn(['currentTextboxValue'], '')
+        const currentTextboxValue = getStateTree().getIn(['currentTextboxValue'], '')
         if (currentTextboxValue.length === 0) return getStateTree()
-        return getStateTree().withMutations(stateTree => {
+        return getStateTree().withMutations((stateTree) => {
           stateTree
-            .updateIn(['items'], items => (items || new List()).push(new TodoItemRecord({text: currentTextboxValue})))
+            .updateIn(['items'], items => (items || new List()).push(new TodoItemRecord({ text: currentTextboxValue })))
             .set('currentTextboxValue', '')
         })
       },
-      handleToggleCompleted: (index, e) => getStateTree().mergeIn(['items', index], {completed: e.target.checked}),
-      removeTodoItem: (index) => getStateTree().updateIn(['items'], items => items.remove(index))
+      handleToggleCompleted: (index, e) => getStateTree().mergeIn(['items', index], { completed: e.target.checked }),
+      removeTodoItem: index => getStateTree().updateIn(['items'], items => items.remove(index))
     }
   },
   // Keypath of the subtree that this component will use (i.e stateTree will be Root->Todo)
@@ -51,10 +51,10 @@ class Todo extends Component {
           )
         })}
         <input
-          type='textbox'
+          type="textbox"
           value={this.props.currentTextboxValue}
           onChange={this.updaters.handleTodoInputChange}
-          onKeyPress={(e) => {if (e.key === 'Enter') {this.updaters.addTodoItem()}}}
+          onKeyPress={(e) => { if (e.key === 'Enter') { this.updaters.addTodoItem() } }}
         />
         <button onClick={this.updaters.addTodoItem}>Add</button>
       </div>
