@@ -1,37 +1,43 @@
-import PropTypes from 'prop-types'
-import React, { Component, Children } from 'react';
-import { Map } from 'immutable'
+import React, { Component } from 'react';
 
-const Statify = {stateTree: new Map()}
+const Statify = {
+  stateTree: null
+}
+
 window.Statify = Statify
 
-const StatifiedComposer = (StatifiedComponent, getState, namespace) => class StatifiedComponentWrapper extends Component {
+// Higher-order function to inject state into a component
+const StatifiedComposer = (StatifiedComponent, getState, keyPath, treeModifier) => class StatifiedComponentWrapper extends Component {
   constructor(props) {
     super(props)
-    this.state = {ready: false};
+    registerListener(this);
+    this.state = {ready: false, stateTree: treeModifier(Statify.stateTree, keyPath)};
   }
   componentDidMount() {
     this.setState({ ready: true });
   }
+  onUpdate() {
+    this.setState({stateTree: treeModifier(Statify.stateTree, keyPath)})
+  }
   render() {
-    return this.state.ready && <StatifiedComponent {...Object.assign(getState.call(this, Statify.stateTree.getIn(namespace, new Map()), this.props), this.props)} />
+    return this.state.ready && <StatifiedComponent {...Object.assign(getState.call(this, this.state.stateTree, this.props), this.props)} />
   }
 };
 
 // Class Decorator
-const statify = function (component, getState, updaters, namespace = []) {
+const statify = function (component, getState, updaters, keyPath, treeModifier = a => a) {
   if (updaters) {
-    let appliedUpdaters = updaters(() => Statify.stateTree.getIn(namespace, new Map()))
+    let appliedUpdaters = updaters(() => treeModifier(Statify.stateTree, keyPath))
     Object.entries(appliedUpdaters).forEach(function([key, value]) {
       appliedUpdaters[key] = function(...args) {
         let result = value.apply(appliedUpdaters, args)
         if (result.then) {
           result.then((stateTree) => {
-            Statify.stateTree = Statify.stateTree.mergeIn(namespace, stateTree);
+            Statify.stateTree = Statify.mergeUpdates(Statify.stateTree, keyPath, stateTree);
             notifyAll();
           })
         } else {
-          Statify.stateTree = Statify.stateTree.mergeIn(namespace, result);
+          Statify.stateTree = Statify.mergeUpdates(Statify.stateTree, keyPath, result);
           notifyAll();
         }
 
@@ -41,7 +47,7 @@ const statify = function (component, getState, updaters, namespace = []) {
     component.prototype.updaters = appliedUpdaters
   }
 
-  return StatifiedComposer(component, getState, namespace)
+  return StatifiedComposer(component, getState, keyPath, treeModifier)
 }
 
 let listeners = []
@@ -54,22 +60,10 @@ function notifyAll() {
   listeners.forEach((listener) => listener.onUpdate())
 }
 
-const curriedStatify = (getState, updaters, namespace) => component => statify(component, getState, updaters, namespace)
+const curriedStatify = (getState, updaters, keyPath, treeModifier) => component => statify(component, getState, updaters, keyPath, treeModifier)
 
-class StatifyProvider extends Component {
-  componentDidMount() {
-    registerListener(this);
-  }
-
-  onUpdate() {
-    this.setState({stateTree: Statify.stateTree})
-  }
-
-  render() {
-    let child = Children.only(this.props.children)
-    return React.cloneElement(child)
-  }
+function initializeStatify(initialValue, mergeUpdates) {
+  Statify.stateTree = initialValue
+  Statify.mergeUpdates = mergeUpdates
 }
-
-let stateTree = Statify.stateTree
-export {StatifyProvider, stateTree, curriedStatify as statify}
+export {initializeStatify, curriedStatify as statify}

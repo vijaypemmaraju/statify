@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import './Todo.scss';
 import TodoItem from './TodoItem'
 import {statify} from './statify'
-import {List} from 'immutable'
+import {Map, List} from 'immutable'
 import TodoItemRecord from './models/TodoItemRecord'
 
 @statify(
@@ -30,8 +30,9 @@ import TodoItemRecord from './models/TodoItemRecord'
       removeTodoItem: (index) => getStateTree().updateIn(['items'], items => items.remove(index))
     }
   },
-  // Namespace of the subtree that this component will use (i.e stateTree will be Root->Todo)
-  ['Todo']
+  // Keypath of the subtree that this component will use (i.e stateTree will be Root->Todo)
+  ['Todo'],
+  (stateTree, keyPath) => stateTree.getIn(keyPath, new Map())
 )
 class Todo extends Component {
   render() {
